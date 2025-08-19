@@ -1,29 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import express from 'express';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
 
-import http from 'http';
-import { sequelize } from './config';
+const app = express();
+const server = createServer(app);
+const io = new Server(server);
 
-const server = http.createServer(
-  (
-    req: http.IncomingMessage,
-    res: http.ServerResponse<http.IncomingMessage>
-  ) => {
-    /* log page not found if the route is not main */
-    if (req.url !== '/') {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      return res.end('page not found, sorry');
-    }
-
-    /* main route */
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('hello from scoopy');
-  }
-);
-
-const port = process.env.PORT || 3000;
-
-server.listen(port, async () => {
-  /* database configuration */
-  await sequelize.authenticate();
+io.on('connection', (socket) => {
+  socket.data.username = 'alice';
+  socket.join('room1');
 });
+
+console.log('running');
+server.listen(5000);
