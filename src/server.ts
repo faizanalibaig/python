@@ -1,15 +1,28 @@
 import express from 'express';
-import { Server } from 'socket.io';
 import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
+const httpServer = createServer(app); //http server
+const io = new Server(httpServer); //socket server
 
+/* socket.io connection */
 io.on('connection', (socket) => {
-  socket.data.username = 'alice';
-  socket.join('room1');
+  console.log(`User connected: ${socket.id}`);
+
+  /* event */
+  socket.on('chat message', (data) => {
+    console.log(`Message from ${socket.id}: ${data}`);
+    socket.emit('reply', `Server received: ${data}`);
+  });
+
+  /* disconnection */
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
 });
 
-console.log('running');
-server.listen(5000);
+/* server listen */
+httpServer.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
